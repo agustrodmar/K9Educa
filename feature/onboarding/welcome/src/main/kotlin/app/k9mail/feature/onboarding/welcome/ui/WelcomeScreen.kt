@@ -6,12 +6,12 @@ import app.k9mail.core.common.provider.AppNameProvider
 @Composable
 fun WelcomeScreen(
     onStartClick: () -> Unit,
-    onImportClick: () -> Unit,
+    // onImportClick: () -> Unit,
     appNameProvider: AppNameProvider,
 ) {
     WelcomeContent(
         onStartClick = onStartClick,
-        onImportClick = onImportClick,
+        // onImportClick = onImportClick,
         appName = appNameProvider.appName,
     )
 }

@@ -11,7 +11,7 @@ internal fun WelcomeScreenPreview() {
     PreviewWithTheme {
         WelcomeScreen(
             onStartClick = {},
-            onImportClick = {},
+            // onImportClick = {},
             appNameProvider = object : AppNameProvider {
                 override val appName: String = "AppName"
             },

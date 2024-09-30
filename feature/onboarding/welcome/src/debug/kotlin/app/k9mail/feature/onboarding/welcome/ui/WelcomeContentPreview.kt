@@ -10,7 +10,7 @@ internal fun WelcomeContentPreview() {
     PreviewWithTheme {
         WelcomeContent(
             onStartClick = {},
-            onImportClick = {},
+            // onImportClick = {},
             appName = "AppName",
         )
     }

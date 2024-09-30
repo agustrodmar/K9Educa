@@ -37,6 +37,11 @@ private fun NavController.navigateToPermissions() {
     }
 }
 
+/**
+ * EducaMadrid:
+ * Se comenta el botón de import, que no es necesario para
+ * la Welcome Screen de EducaMadrid.
+ */
 @Composable
 fun OnboardingNavHost(
     onFinish: (String?) -> Unit,
@@ -52,7 +57,7 @@ fun OnboardingNavHost(
         composable(route = NESTED_NAVIGATION_ROUTE_WELCOME) {
             WelcomeScreen(
                 onStartClick = { navController.navigateToAccountSetup() },
-                onImportClick = { navController.navigateToSettingsImport() },
+                // onImportClick = { navController.navigateToSettingsImport() },
                 appNameProvider = koinInject(),
             )
         }

@@ -96,6 +96,7 @@ timber = "5.0.1"
 tokenautocomplete = "4.0.0-beta01-k9mail02"
 turbine = "0.13.0"
 xmlpull = "1.0"
+roomKtx = "2.6.1"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
@@ -233,6 +234,7 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 tokenautocomplete = { module = "de.cketti.temp:tokenautocomplete", version.ref = "tokenautocomplete" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 xmlpull = { module = "com.github.cketti:xmlpull-extracted-from-android", version.ref = "xmlpull" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
 
 [bundles]
 shared-jvm-main = [

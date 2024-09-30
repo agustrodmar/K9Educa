@@ -24,6 +24,7 @@ dependencies {
     implementation(projects.feature.account.server.settings)
     implementation(projects.feature.account.server.certificate)
     api(projects.feature.account.server.validation)
+    implementation(libs.androidx.room.ktx)
 
 
     testImplementation(projects.core.ui.compose.testing)

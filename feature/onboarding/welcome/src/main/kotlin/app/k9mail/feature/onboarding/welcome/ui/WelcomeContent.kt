@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package app.k9mail.feature.onboarding.welcome.ui
 
 import androidx.compose.foundation.Image
@@ -21,7 +23,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.k9mail.core.ui.compose.designsystem.atom.Surface
 import app.k9mail.core.ui.compose.designsystem.atom.button.ButtonFilled
-import app.k9mail.core.ui.compose.designsystem.atom.button.ButtonText
 import app.k9mail.core.ui.compose.designsystem.atom.text.TextBodyLarge
 import app.k9mail.core.ui.compose.designsystem.atom.text.TextDisplayMedium
 import app.k9mail.core.ui.compose.designsystem.template.LazyColumnWithHeaderFooter
@@ -33,10 +34,13 @@ private const val CIRCLE_COLOR = 0xFFEEEEEE
 private const val CIRCLE_SIZE_DP = 300
 private const val LOGO_SIZE_DP = 200
 
+/**
+ * Welcome Content personalizada de EducaMadrid.
+ * Sin botón de Importar Ajustes.
+ */
 @Composable
 internal fun WelcomeContent(
     onStartClick: () -> Unit,
-    onImportClick: () -> Unit,
     appName: String,
     modifier: Modifier = Modifier,
 ) {
@@ -52,7 +56,7 @@ internal fun WelcomeContent(
                             .fillMaxWidth()
                             .padding(top = MainTheme.spacings.quadruple),
                         onStartClick = onStartClick,
-                        onImportClick = onImportClick,
+                        // onImportClick = {}  // ahora ya no es necesario
                     )
                 },
                 verticalArrangement = Arrangement.SpaceEvenly,
@@ -138,10 +142,14 @@ private fun WelcomeMessage(
     }
 }
 
+/**
+ * Nuevo WelcomeFooter sin botón de importar ajustes. Ajustado
+ * a las necesidades del correo de Educa.
+ */
 @Composable
 private fun WelcomeFooter(
     onStartClick: () -> Unit,
-    onImportClick: () -> Unit,
+    // onImportClick: () -> Unit,  // Este parámetro ya no es necesario, lo comento.
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -149,14 +157,18 @@ private fun WelcomeFooter(
         verticalArrangement = Arrangement.spacedBy(MainTheme.spacings.quarter),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Solo dejamos el botón "Comenzar"
         ButtonFilled(
             text = stringResource(id = R.string.onboarding_welcome_start_button),
             onClick = onStartClick,
+            modifier = Modifier.
+            padding(bottom = 40.dp)
         )
-        ButtonText(
-            text = stringResource(id = R.string.onboarding_welcome_import_button),
-            onClick = onImportClick,
-        )
+        // Dejo comentado el botón "Importar Ajustes"
+        // ButtonText(
+        //     text = stringResource(id = R.string.onboarding_welcome_import_button),
+        //     onClick = onImportClick,
+        // )
     }
 }
 

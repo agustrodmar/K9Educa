@@ -5,6 +5,7 @@ import app.k9mail.autodiscovery.api.AutoDiscoveryResult
 import app.k9mail.autodiscovery.api.ImapServerSettings
 import app.k9mail.autodiscovery.api.IncomingServerSettings
 import app.k9mail.autodiscovery.demo.DemoServerSettings
+import app.k9mail.core.common.domain.usecase.validation.ValidationError
 import app.k9mail.core.common.domain.usecase.validation.ValidationResult
 import app.k9mail.core.ui.compose.common.mvi.BaseViewModel
 import app.k9mail.feature.account.common.domain.AccountDomainContract
@@ -23,7 +24,7 @@ import app.k9mail.feature.account.setup.ui.autodiscovery.AccountAutoDiscoveryCon
 import app.k9mail.feature.account.setup.ui.autodiscovery.AccountAutoDiscoveryContract.Validator
 import kotlinx.coroutines.launch
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "SpellCheckingInspection")
 internal class AccountAutoDiscoveryViewModel(
     initialState: State = State(),
     private val validator: Validator,
@@ -82,23 +83,48 @@ internal class AccountAutoDiscoveryViewModel(
 
     private fun onNext() {
         when (state.value.configStep) {
-            ConfigStep.EMAIL_ADDRESS ->
-                if (state.value.error != null) {
+            ConfigStep.EMAIL_ADDRESS -> {
+                val emailAddressValue = state.value.emailAddress.value
+                // se comprueba si el campo de correo está en blanco
+                if (emailAddressValue.isBlank()) {
                     updateState {
                         it.copy(
-                            error = null,
-                            configStep = ConfigStep.PASSWORD,
+                            emailAddress = it.emailAddress.updateError(
+                                EmailValidationError("Introduzca su dirección de correo electrónico para continuar.")
+                            )
                         )
                     }
-                } else {
+                    return
+                }
+
+                // Valida si el dominio es permitido
+                val isDomainValid = emailAddressValue.endsWith("@educa.madrid.org", ignoreCase = true)
+                if (!isDomainValid) {
+                    // Actualiza el estado con el error de dominio no válido
+                    updateState {
+                        it.copy(
+                            emailAddress = it.emailAddress.updateError(
+                                EmailValidationError("La dirección de correo electrónico proporcionada no pertenece a" +
+                                    " EducaMadrid: @educa.madrid.org")
+                            )
+                        )
+                    }
+                    return
+                }
+
+                // Si no hay errores, continuar con la siguiente pantalla
+                val emailValidationResult = validator.validateEmailAddress(emailAddressValue)
+                if (emailValidationResult !is ValidationResult.Failure) {
                     submitEmail()
                 }
+            }
 
             ConfigStep.PASSWORD -> submitPassword()
             ConfigStep.OAUTH -> Unit
             ConfigStep.MANUAL_SETUP -> navigateNext(isAutomaticConfig = false)
         }
     }
+
 
     private fun onRetry() {
         updateState {
@@ -294,5 +320,16 @@ internal class AccountAutoDiscoveryViewModel(
             isAutomaticConfig = isAutomaticConfig,
             incomingProtocolType = incomingProtocolType,
         )
+    }
+}
+
+/**
+ * Clase concreta que va a interactuar con el viewModel para error si se
+ * intenta conectar con un email que no es de EducaMadrid.
+ */
+@Suppress("SpellCheckingInspection")
+class EmailValidationError(val message: String) : ValidationError {
+    override fun toString(): String {
+        return message
     }
 }
