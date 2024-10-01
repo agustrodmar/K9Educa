@@ -214,6 +214,8 @@ private fun LazyGridScope.emailTextFieldOutlinedItems() {
                 isRequired = state.value.isRequired,
                 hasError = state.value.hasError,
                 modifier = Modifier.fillMaxWidth(),
+                error = state.value.hasError.toString()
+
             )
         }
     }
