@@ -1,7 +1,13 @@
+@file:Suppress("SpellCheckingInspection")
+
 package app.k9mail.core.ui.compose.designsystem.atom.textfield
 
 import android.os.Build
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import app.k9mail.core.ui.compose.designsystem.R
 import app.k9mail.core.ui.compose.designsystem.atom.icon.Icons
 import androidx.compose.material3.Icon as Material3Icon
@@ -31,30 +38,46 @@ fun TextFieldOutlinedPassword(
     isReadOnly: Boolean = false,
     isRequired: Boolean = false,
     hasError: Boolean = false,
+    errorMessage: String? = null // Añado este parámetro para el mensaje de error
 ) {
     var passwordVisibilityState by rememberSaveable { mutableStateOf(false) }
 
-    Material3OutlinedTextField(
-        value = value,
-        onValueChange = stripLineBreaks(onValueChange),
-        modifier = modifier.applyLegacyPasswordSemantics(),
-        enabled = isEnabled,
-        label = selectLabel(label, isRequired),
-        trailingIcon = selectTrailingIcon(
-            isEnabled = isEnabled,
-            isPasswordVisible = passwordVisibilityState,
-            onClick = { passwordVisibilityState = !passwordVisibilityState },
-        ),
-        readOnly = isReadOnly,
-        isError = hasError,
-        visualTransformation = selectVisualTransformation(
-            isEnabled = isEnabled,
-            isPasswordVisible = passwordVisibilityState,
-        ),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        singleLine = true,
-    )
+
+    Column {
+        // El campo de texto para la contraseña
+        Material3OutlinedTextField(
+            value = value,
+            onValueChange = stripLineBreaks(onValueChange),
+            modifier = modifier.applyLegacyPasswordSemantics(),
+            enabled = isEnabled,
+            label = selectLabel(label, isRequired),
+            trailingIcon = selectTrailingIcon(
+                isEnabled = isEnabled,
+                isPasswordVisible = passwordVisibilityState,
+                onClick = { passwordVisibilityState = !passwordVisibilityState },
+            ),
+            readOnly = isReadOnly,
+            isError = hasError,  // Si hay un error, mostramos el campo en rojo
+            visualTransformation = selectVisualTransformation(
+                isEnabled = isEnabled,
+                isPasswordVisible = passwordVisibilityState,
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true,
+        )
+
+        // Mostrar mensaje de error si existe
+        if (hasError && errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
 }
+
 
 @Composable
 fun TextFieldOutlinedPassword(

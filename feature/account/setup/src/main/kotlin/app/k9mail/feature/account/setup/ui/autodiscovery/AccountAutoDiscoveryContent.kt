@@ -133,7 +133,7 @@ internal fun ContentView(
     oAuthViewModel: AccountOAuthContract.ViewModel,
     resources: Resources,
     modifier: Modifier = Modifier,
-    showError: Boolean = false  // Añadimos showError aquí
+    showError: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -141,38 +141,45 @@ internal fun ContentView(
             .padding(MainTheme.spacings.quadruple)
             .then(modifier),
     ) {
-        if (state.configStep != AccountAutoDiscoveryContract.ConfigStep.EMAIL_ADDRESS) {
-            AutoDiscoveryResultView(
-                settings = state.autoDiscoverySettings,
-                onEditConfigurationClick = { onEvent(Event.OnEditConfigurationClicked) },
+        // Validación condicional: Si estamos en el paso de la dirección de correo electrónico
+        if (state.configStep == AccountAutoDiscoveryContract.ConfigStep.EMAIL_ADDRESS) {
+            EmailAddressDiscoveryInput(
+                emailAddress = state.emailAddress.value,
+                errorMessage = state.emailAddress.error?.toAutoDiscoveryValidationErrorString(resources),
+                onEmailAddressChange = { onEvent(Event.EmailAddressChanged(it)) },
+                contentPadding = PaddingValues(),
+                showError = showError
             )
-            if (state.autoDiscoverySettings != null && state.autoDiscoverySettings.isTrusted.not()) {
-                AutoDiscoveryResultApprovalView(
-                    approvalState = state.configurationApproved,
-                    onApprovalChange = { onEvent(Event.ResultApprovalChanged(it)) },
-                )
-            }
-            Spacer(modifier = Modifier.height(MainTheme.spacings.double))
-        }
 
-        // Aquí usamos EmailAddressDiscoveryInput y pasamos showError
-        EmailAddressDiscoveryInput(
-            emailAddress = state.emailAddress.value,
-            errorMessage = state.emailAddress.error?.toAutoDiscoveryValidationErrorString(resources),  // Pasamos el mensaje de error
-            onEmailAddressChange = { onEvent(Event.EmailAddressChanged(it)) },
-            contentPadding = PaddingValues(),
-            showError = showError  // Mostrar el campo en rojo si showError es true
-        )
-
-        if (state.configStep == AccountAutoDiscoveryContract.ConfigStep.PASSWORD) {
-            Spacer(modifier = Modifier.height(MainTheme.spacings.double))
+            // Agregamos el campo de contraseña inmediatamente después del correo
             PasswordInput(
                 password = state.password.value,
                 errorMessage = state.password.error?.toAutoDiscoveryValidationErrorString(resources),
                 onPasswordChange = { onEvent(Event.PasswordChanged(it)) },
                 contentPadding = PaddingValues(),
             )
-        } else if (state.configStep == AccountAutoDiscoveryContract.ConfigStep.OAUTH) {
+        }
+
+        // En caso de configuraciones automáticas o con OAuth
+        if (state.configStep != AccountAutoDiscoveryContract.ConfigStep.EMAIL_ADDRESS) {
+            AutoDiscoveryResultView(
+                settings = state.autoDiscoverySettings,
+                onEditConfigurationClick = { onEvent(Event.OnEditConfigurationClicked) },
+            )
+
+            // Si no se confía en la configuración, mostramos la vista de aprobación
+            if (state.autoDiscoverySettings != null && state.autoDiscoverySettings.isTrusted.not()) {
+                AutoDiscoveryResultApprovalView(
+                    approvalState = state.configurationApproved,
+                    onApprovalChange = { onEvent(Event.ResultApprovalChanged(it)) },
+                )
+            }
+
+            Spacer(modifier = Modifier.height(MainTheme.spacings.double))
+        }
+
+        // Mostrar el OAuth si se necesita
+        if (state.configStep == AccountAutoDiscoveryContract.ConfigStep.OAUTH) {
             val isAutoDiscoverySettingsTrusted = state.autoDiscoverySettings?.isTrusted ?: false
             val isConfigurationApproved = state.configurationApproved.value ?: false
             Spacer(modifier = Modifier.height(MainTheme.spacings.double))
@@ -184,3 +191,4 @@ internal fun ContentView(
         }
     }
 }
+

@@ -31,7 +31,11 @@ internal fun AccountAutoDiscoveryScreen(
         }
     }
 
-    var showError by remember { mutableStateOf(false) }  // Inicialmente false
+    // Inicialmente no hay errores, pero los controlamos aquí para correo y contraseña
+    var showError by remember { mutableStateOf(false) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     BackHandler {
         dispatch(Event.OnBackClicked)
     }
@@ -40,13 +44,30 @@ internal fun AccountAutoDiscoveryScreen(
         state = state.value,
         onEvent = { event ->
             if (event is Event.OnNextClicked) {
-                // Validación del email antes de avanzar
-                val emailIsValid = state.value.emailAddress.value.endsWith("@educa.madrid.org", ignoreCase = true)
-                if (!emailIsValid) {
-                    showError = true  // Muestra el error solo cuando el correo es incorrecto
+                val emailValue = state.value.emailAddress.value
+                val passwordValue = state.value.password.value
+
+                // Validamos si el correo está en blanco o no pertenece a @educa.madrid.org
+                emailError = when {
+                    emailValue.isBlank() -> "Introduzca su dirección de correo electrónico para continuar."
+                    !emailValue.endsWith("@educa.madrid.org", ignoreCase = true) ->
+                        "La dirección de correo electrónico proporcionada no pertenece a EducaMadrid: @educa.madrid.org"
+                    else -> null
+                }
+
+                // Validamos si la contraseña está vacía
+                passwordError = if (passwordValue.isBlank()) {
+                    "Introduzca su contraseña para continuar."
                 } else {
-                    showError = false  // Si el correo es válido, ocultaa el error
-                    dispatch(event)  // Si es válido, dispara el evento normalmente
+                    null
+                }
+
+                // Si hay errores en el correo o la contraseña, mostramos el error
+                showError = emailError != null || passwordError != null
+
+                if (!showError) {
+                    // Si no hay errores, disparamos el evento para continuar
+                    dispatch(event)
                 }
             } else {
                 dispatch(event)
@@ -55,6 +76,6 @@ internal fun AccountAutoDiscoveryScreen(
         oAuthViewModel = viewModel.oAuthViewModel,
         appName = appNameProvider.appName,
         modifier = modifier,
-        showError = showError  // Pasa el estado de error para que se muestre si es necesario
+        showError = showError  // Pasamos el estado de error para que se muestre si es necesario
     )
 }

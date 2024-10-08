@@ -82,49 +82,54 @@ internal class AccountAutoDiscoveryViewModel(
     }
 
     private fun onNext() {
-        when (state.value.configStep) {
-            ConfigStep.EMAIL_ADDRESS -> {
-                val emailAddressValue = state.value.emailAddress.value
-                // se comprueba si el campo de correo está en blanco
-                if (emailAddressValue.isBlank()) {
-                    updateState {
-                        it.copy(
-                            emailAddress = it.emailAddress.updateError(
-                                EmailValidationError("Introduzca su dirección de correo electrónico para continuar.")
-                            )
-                        )
-                    }
-                    return
-                }
+        // Combinamos las validaciones de email y contraseña
+        val emailAddressValue = state.value.emailAddress.value
+        val passwordValue = state.value.password.value
 
-                // Valida si el dominio es permitido
-                val isDomainValid = emailAddressValue.endsWith("@educa.madrid.org", ignoreCase = true)
-                if (!isDomainValid) {
-                    // Actualiza el estado con el error de dominio no válido
-                    updateState {
-                        it.copy(
-                            emailAddress = it.emailAddress.updateError(
-                                EmailValidationError("La dirección de correo electrónico proporcionada no pertenece a" +
-                                    " EducaMadrid: @educa.madrid.org")
-                            )
-                        )
-                    }
-                    return
-                }
-
-                // Si no hay errores, continuar con la siguiente pantalla
-                val emailValidationResult = validator.validateEmailAddress(emailAddressValue)
-                if (emailValidationResult !is ValidationResult.Failure) {
-                    submitEmail()
-                }
+        // Validamos el email: si está en blanco o no es de EducaMadrid
+        if (emailAddressValue.isBlank()) {
+            updateState {
+                it.copy(
+                    emailAddress = it.emailAddress.updateError(
+                        EmailValidationError("Introduzca su dirección de correo electrónico para continuar.")
+                    )
+                )
             }
+            return
+        }
 
-            ConfigStep.PASSWORD -> submitPassword()
-            ConfigStep.OAUTH -> Unit
-            ConfigStep.MANUAL_SETUP -> navigateNext(isAutomaticConfig = false)
+        // Validar dominio permitido
+        val isDomainValid = emailAddressValue.endsWith("@educa.madrid.org", ignoreCase = true)
+        if (!isDomainValid) {
+            updateState {
+                it.copy(
+                    emailAddress = it.emailAddress.updateError(
+                        EmailValidationError("La dirección de correo electrónico proporcionada no pertenece a EducaMadrid: @educa.madrid.org")
+                    )
+                )
+            }
+            return
+        }
+
+        // Validamos el correo utilizando el validador (si es un correo válido, sintácticamente)
+        val emailValidationResult = validator.validateEmailAddress(emailAddressValue)
+        val passwordValidationResult = validator.validatePassword(passwordValue)
+
+        val isEmailValid = emailValidationResult !is ValidationResult.Failure
+        val isPasswordValid = passwordValidationResult !is ValidationResult.Failure
+
+        updateState {
+            it.copy(
+                emailAddress = it.emailAddress.updateFromValidationResult(emailValidationResult),
+                password = it.password.updateFromValidationResult(passwordValidationResult),
+            )
+        }
+
+        // Si ambos son válidos, procedemos con la detección automática de la configuración
+        if (isEmailValid && isPasswordValid) {
+            loadAutoDiscovery()  // Función existente que carga la configuración de auto-descubrimiento
         }
     }
-
 
     private fun onRetry() {
         updateState {
